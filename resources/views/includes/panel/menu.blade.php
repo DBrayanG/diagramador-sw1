@@ -2,7 +2,7 @@
 <ul class="navbar-nav">
     <li class="nav-item  active ">
         <a class="nav-link  active " href="{{ url('/home') }}">
-            <i class="ni ni-tv-2 text-info"></i> Dashboard
+            <i class="ni ni-tv-2 text-info"></i> Inicio
         </a>
     </li>
     <li class="nav-item">

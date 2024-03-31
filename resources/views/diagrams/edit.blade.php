@@ -38,10 +38,10 @@
                     <input type="text" name="descripcion" class="form-control" value="{{ old('descripcion',$diagram->descripcion) }}">
                 </div>
 
-                <div class="form-group">
+                {{-- <div class="form-group">
                     <label for="contenido">Contenido</label>
                     <input type="text" name="contenido" class="form-control" value="{{ old('contenido',$diagram->contenido) }}">
-                </div>
+                </div> --}}
 
                 <button type="submit" class="btn btn-sm btn-primary">Actualizar diagrama</button>
             </form>

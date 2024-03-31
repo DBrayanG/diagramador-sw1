@@ -16,7 +16,7 @@
     <link href="{{ asset('js/plugins/@fortawesome/fontawesome-free/css/all.min.css') }}" rel="stylesheet" />
     <!-- CSS Files -->
     <link href="{{ asset('css/argon-dashboard.css?v=1.1.2') }}" rel="stylesheet" />
-    
+
 </head>
 
 <body class="">
@@ -51,12 +51,12 @@
                         aria-expanded="false">
                         <div class="media align-items-center">
                             <span class="avatar avatar-sm rounded-circle">
-                                <img alt="Image placeholder" src="{{ asset('img/theme/team-1-800x800.jpg') }}">
+                                <img alt="Image placeholder" src="{{ asset('img/theme/user.png') }}">
                             </span>
                         </div>
                     </a>
                    @include('includes.panel.userOptions')
-                    
+
                 </li>
             </ul>
             <!-- Collapse -->
@@ -65,8 +65,8 @@
                 <div class="navbar-collapse-header d-md-none">
                     <div class="row">
                         <div class="col-6 collapse-brand">
-                            <a href="./index.html">
-                                <img src="{{ asset('img/brand/blue.png"') }}>
+                            <a href="{{url('home')}}">
+                                <img src="{{ asset('img/brand/blue.png') }}">
                             </a>
                         </div>
                         <div class="col-6
@@ -93,16 +93,16 @@
         <nav class="navbar navbar-top navbar-expand-md navbar-dark" id="navbar-main">
             <div class="container-fluid">
                 <!-- Brand -->
-                <a class="h4 mb-0 text-white text-uppercase d-none d-lg-inline-block" href="./index.html">Dashboard</a>
+               {{--  <a class="h4 mb-0 text-white text-uppercase d-none d-lg-inline-block" href="./index.html">Dashboard</a> --}}
                 <!-- Form -->
                 <form class="navbar-search navbar-search-dark form-inline mr-3 d-none d-md-flex ml-lg-auto">
                     <div class="form-group mb-0">
-                        <div class="input-group input-group-alternative">
+                        {{-- <div class="input-group input-group-alternative">
                             <div class="input-group-prepend">
                                 <span class="input-group-text"><i class="fas fa-search"></i></span>
                             </div>
                             <input class="form-control" placeholder="Search" type="text">
-                        </div>
+                        </div> --}}
                     </div>
                 </form>
                 <!-- User -->
@@ -112,14 +112,14 @@
                             aria-haspopup="true" aria-expanded="false">
                             <div class="media align-items-center">
                                 <span class="avatar avatar-sm rounded-circle">
-                                    <img alt="Image placeholder" src="{{ asset('img/theme/team-1-800x800.jpg') }}">
+                                    <img alt="Image placeholder" src="{{ asset('img/theme/user.png') }}">
                                 </span>
                                 <div class="media-body ml-2 d-none d-lg-block">
                                     <span class="mb-0 text-sm  font-weight-bold">{{{ auth()->user()->name}}}</span>
                                 </div>
                             </div>
                         </a>
-                      
+
                         @include('includes.panel.userOptions')
                     </li>
                 </ul>

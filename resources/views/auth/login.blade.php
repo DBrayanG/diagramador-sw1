@@ -20,7 +20,7 @@
                             </div>
                         @else
                             <div class="text-center text-muted mb-4">
-                                <small>Ingresa tus credenciales para ingresar al sistema</small>
+                                <small>Ingresa tus credenciales</small>
                             </div>
                         @endif
 

@@ -18,7 +18,7 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar navbar-dark bg-primary justify-content-center">
+    <nav class="navbar navbar-expand-lg navbar navbar-dark bg-info justify-content-center">
         <div class="container">
             <a class="navbar-brand" href="#">Diagramador</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -29,7 +29,7 @@
             <div class="collapse navbar-collapse justify-content-center" id="navbarSupportedContent">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url('/home') }}">Dashboard</a>
+                        <a class="nav-link active" aria-current="page" href="{{ url('/home') }}">Inicio</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="{{ url('/diagramas') }}">Volver</a>
@@ -494,6 +494,8 @@
                 <div>
                     <div>
                         <button id="AddLifelineButton" onclick="addLifeline()">Añadir Linea de Vida</button>
+                        <input id="Delete" type="button" onclick="myDiagram.commandHandler.deleteSelection()" value="Eliminar ">
+                        <input id="Undo" type="button" onclick="myDiagram.commandHandler.undo()" value="Deshacer ">
                     </div>
                 </div>
             </div>
