@@ -43,48 +43,21 @@
                     </form>
 
 
-                    {{-- <li class="nav-item">
-                        <a class="nav-link active" href="#" id="generateCodeButton" data-toggle="modal"
-                            data-target="#codeModal">Generar Código</a>
-                    </li> --}}
-
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" id="generateCodePython" data-toggle="modal"
+                            >Python</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" id="generateCodeJava" data-toggle="modal"
+                            >Java</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" id="generateCodeJavaScript" data-toggle="modal"
+                            >JavaScript</a>
+                    </li>
                 </ul>
             </div>
         </div>
-        <div class="modal fade" id="codeModal" tabindex="-1" role="dialog" aria-labelledby="codeModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="codeModalLabel">Código Generado</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <h5>Java</h5>
-                        <img src="https://img.icons8.com/color/48/000000/java-coffee-cup-logo.png" alt="Java"
-                            class="language-icon-modal">
-                        <pre id="generatedJavaCode"></pre>
-
-                        <h5>Python</h5>
-                        <img src="https://img.icons8.com/color/48/000000/python.png" alt="Python"
-                            class="language-icon-modal">
-                        <pre id="generatedPythonCode"></pre>
-
-                        <h5>JavaScript</h5>
-                        <img src="https://img.icons8.com/color/48/000000/javascript.png" alt="JavaScript"
-                            class="language-icon-modal">
-                        <pre id="generatedJavaScriptCode"></pre>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
     </nav>
 
     <div class="md:flex flex-col md:flex-row md:min-h-screen w-full max-w-screen-xl mx-auto">
@@ -502,7 +475,35 @@
         </div>
     </div>
 </body>
+<script>
+   
+   function checkUpdates() {
+    $.ajax({
+        url: "{{route('pizarra.actualizar',['diagram' => $diagram->id])}}",
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            const jsonContent = {!! json_encode($contenidoJson) !!};
+            // Manejar los cambios recibidos en 'response'
+            console.log(response);
+            // Ejemplo: Actualizar la tabla HTML con los datos recibidos
+            myDiagram.model = go.Model.fromJson(jsonContent);
+            $('#table-container').html(response.table_html);
+            
+        },
+        error: function(xhr, status, error) {
+            console.error(error);
+        }
+    });
+}
 
+$(document).ready(function() {
+    // Ejecutar la función checkUpdates() cada 5 segundos
+    //setInterval(checkUpdates, 5000);
+    
+});
+   
+</script>
 <script>
     // FUNCION PARA GENERAR CODIGO DE JAVA
     function generateJavaCodeFromDiagram(diagramJson) {
@@ -660,18 +661,31 @@
                 jsCode += "}\n";
             }
         });
-
         return jsCode;
     }
+    //DESCARGA EL CODIGO
+    function generateFile(content, filename) {
 
-    const codejava = generateJavaCodeFromDiagram(contenidoJson);
+        const element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+        element.setAttribute('download', filename);
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+    }
+
+    /*const codejava = generateJavaCodeFromDiagram(contenidoJson);
     const codepython = generatePythonCodeFromDiagram(contenidoJson);
-    const codejavascript = generateJavaScriptCodeFromDiagram(contenidoJson);
+    const codejavascript = generateJavaScriptCodeFromDiagram(contenidoJson);*/
     // console.log(codejava);
     // console.log(codepython);
     // console.log(codejavascript);
 
-    function displayGeneratedCode() {
+    /*function displayGeneratedCode() {
 
         var contenidoJson = myDiagram.model.toJson();
 
@@ -682,8 +696,34 @@
         document.getElementById("generatedJavaCode").textContent = codejava;
         document.getElementById("generatedPythonCode").textContent = codepython;
         document.getElementById("generatedJavaScriptCode").textContent = codejavascript;
+    }*/
+    //document.getElementById("generateCodeButton").addEventListener("click", displayGeneratedCode);
+    //Desacarga codigo Python
+    function displayGeneratedCodePython(){
+        var contenidoJson = myDiagram.model.toJson();
+
+        const codepython = generatePythonCodeFromDiagram(contenidoJson);
+        generateFile(codepython,"code.py");
     }
-    document.getElementById("generateCodeButton").addEventListener("click", displayGeneratedCode);
+    document.getElementById("generateCodePython").addEventListener("click", displayGeneratedCodePython);
+
+    //Descarga Codigo Java
+    function displayGeneratedCodeJava(){
+        var contenidoJson = myDiagram.model.toJson();
+
+        const codejava = generateJavaCodeFromDiagram(contenidoJson);
+        generateFile(codejava,"code.java");
+    }
+    document.getElementById("generateCodeJava").addEventListener("click", displayGeneratedCodeJava);
+
+    //Descarga codigo JavaScript
+    function displayGeneratedCodeJavaScript(){
+        var contenidoJson = myDiagram.model.toJson();
+
+        const codejavascript = generateJavaScriptCodeFromDiagram(contenidoJson);
+        generateFile(codejavascript,"code.js");
+    }
+    document.getElementById("generateCodeJavaScript").addEventListener("click", displayGeneratedCodeJavaScript);
 </script>
 
 <script>
@@ -702,6 +742,7 @@
             success: function(response) {
                 // Maneja la respuesta del servidor, si es necesario
                 console.log('Diagrama guardado con éxito.');
+
             },
             error: function(error) {
                 // Maneja errores, si es necesario
@@ -710,13 +751,16 @@
         });
     }
 
+
+
     // Llama a la función de guardado automáticamente cada segundo
-    ///setInterval(saveDiagramAutomatically, 2000);
+    //setInterval(saveDiagramAutomatically, 3000);
 
     // Agrega el manejador al botón "Guardar Diagrama"
     $(document).ready(function() {
         $('#guardarDiagramaButton').click(function() {
             saveDiagramAutomatically(); // Llama al guardado manual
+
         });
     });
 
