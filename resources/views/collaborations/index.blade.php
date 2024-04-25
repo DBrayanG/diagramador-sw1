@@ -5,14 +5,14 @@
         <div class="card-header border-0">
             <div class="row align-items-center">
                 <div class="col">
-                    <h3 class="mb-0">Colaboraciones</h3>
+                    <h3 class="mb-0">Contribuciones</h3>
                 </div>
             </div>
         </div>
 
         @if ($invitaciones->isEmpty())
             <div class="alert alert-warning" role="alert">
-                No esta colaborando en ningun diagrama por el momento
+                No esta contribuyendo en ningun diagrama por el momento
             </div>
         @else
             <div class="table-responsive">

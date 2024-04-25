@@ -14,7 +14,7 @@
                         </div>
                     @endif
 
-                    {{ __('Has iniciado Sesión!') }}
+                    {{ __('Primer Parcial de la Materia Ingenieria de Software') }}
                 </div>
             </div>
         </div>

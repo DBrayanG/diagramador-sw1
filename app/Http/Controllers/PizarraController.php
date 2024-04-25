@@ -32,7 +32,7 @@ class PizarraController extends Controller
         $diagram->save();
 
         // Redirige al usuario a la página deseada después de guardar el diagrama
-        return response()->noContent();
+        return response()->json(['contenidoJson' => $diagram->contenido]);
     }
 
     public function actualizar(Diagram $diagram){

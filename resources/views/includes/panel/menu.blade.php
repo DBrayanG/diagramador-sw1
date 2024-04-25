@@ -7,21 +7,12 @@
     </li>
     <li class="nav-item">
         <a class="nav-link " href="{{ url('/diagramas') }}">
-            <i class="fas fa-project-diagram text-danger"></i> Diagramas
+            <i class="fas fa-project-diagram text-danger"></i> Mis Diagramas
         </a>
     </li>
     <li class="nav-item">
         <a class="nav-link " href="{{ url('/colaboraciones') }}">
-            <i class="fas fa-bezier-curve text-success"></i> Colaboraciones
+            <i class="fas fa-bezier-curve text-success"></i> Contribuciones
         </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="{{ route('logout') }}"
-            onclick="event.preventDefault(); document.getElementById('formLogout').submit();">
-            <i class="fas fa-sign-in-alt"></i> Cerrar sesión
-        </a>
-        <form action="{{ route('logout') }}" method="POST" style="display: none;" id="formLogout">
-            @csrf
-        </form>
     </li>
 </ul>

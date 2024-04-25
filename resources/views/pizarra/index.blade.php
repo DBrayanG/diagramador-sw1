@@ -90,6 +90,8 @@
                         const idx = document.title.indexOf("*");
                         if (myDiagram.isModified) {
                             if (idx < 0) document.title += "*";
+                            console.log("1");
+                            console.log(e);
                             saveDiagramAutomatically();
                         } else {
                             if (idx >= 0) document.title = document.title.slice(0, idx);
@@ -199,21 +201,28 @@
                         );
                     // create the graph by reading the JSON data saved in "mySavedModel" textarea element
                     load();
+
+                    myDiagram.addDiagramListener("LinkDrawn",function(e){
+                        var link = e.subject;
+                        console.log("link: "+link.data)
+                        socket.emit("link",link.data)
+                    })
                 }
                 // FIN INIT
                 //LINEA DE VIDA BOTON
-                function addLifeline() {
+                function addLifeline(objeto) {
                     const model = myDiagram.model;
                     const nextKey = getNextLifelineKey(model);
                     const newLifelineData = {
                         key: nextKey,
-                        text: "OBJETO",
+                        text: objeto,
                         isGroup: true,
                         loc: "400 0",
                         duration: 10,
                     };
 
                     model.addNodeData(newLifelineData);
+                    socket.emit("linea",newLifelineData);
                     saveDiagramAutomatically();
                 }
 
@@ -394,12 +403,14 @@
                                 group: newlink.data.to,
                                 start: start,
                                 duration: duration
-                            };
+                            };                            
                             model.addNodeData(newact);
                             // now make sure all Lifelines are long enough
+                            socket.emit("link:final",newact);                            
                             ensureLifelineHeights();
                             saveDiagramAutomatically();
                         }
+                        //console.log("newlink:" +newlink)
                         return newlink;
                     }
                 }
@@ -414,13 +425,15 @@
                                 result.add(part, new go.DraggingInfo(part.getPoint(0).copy()));
                             }
                         })
+                        console.log("4")                        
+                        //console.log("result:",result)
                         saveDiagramAutomatically();
                         return result;
                     }
 
                     // override to allow dragging when the selection only includes Links
                     mayMove() {
-                        return !this.diagram.isReadOnly && this.diagram.allowMove;
+                        return !this.diagram.isReadOnly && this.diagram.allowMove;                        
                     }
 
                     moveParts(parts, offset, check) {
@@ -437,7 +450,7 @@
                                 link.diagram.model.set(link.data, "time", t);
                                 link.invalidateRoute();
                             }
-                        }
+                        }                        
                     }
                 }
                 var contenidoJson = {!! json_encode($contenidoJson) !!};
@@ -453,6 +466,7 @@
                     const jsonContent = {!! json_encode($contenidoJson) !!};
                     if (jsonContent) {
                         myDiagram.model = go.Model.fromJson(jsonContent);
+                        
                     } else {
                         // Manejar el caso en el que el contenido JSON sea nulo o inválido
                         console.error("El contenido JSON es nulo o inválido.");
@@ -466,8 +480,12 @@
                 <div id="myDiagramDiv" style="border: solid 1px black; width: 100%; height: 450px"></div>
                 <div>
                     <div>
-                        <button id="AddLifelineButton" onclick="addLifeline()">Añadir Linea de Vida</button>
-                        <input id="Delete" type="button" onclick="myDiagram.commandHandler.deleteSelection()" value="Eliminar ">
+                        <button id="AddLifelineButton" onclick="addLifeline('ACTOR')">ACTOR</button>
+                        <button id="AddLifelineButton" onclick="addLifeline('OBJECT')">OBJECT</button>
+                        <button id="AddLifelineButton" onclick="addLifeline('CONTROL')">CONTROL</button>
+                        <button id="AddLifelineButton" onclick="addLifeline('BOUNDARY')">BOUNDARY</button>
+                        <button id="AddLifelineButton" onclick="addLifeline('ENTITY')">ENTITY</button>
+                        <input id="Delete" type="button" onclick="eliminar()" value="Eliminar ">
                         <input id="Undo" type="button" onclick="myDiagram.commandHandler.undo()" value="Deshacer ">
                     </div>
                 </div>
@@ -475,34 +493,74 @@
         </div>
     </div>
 </body>
-<script>
-   
-   function checkUpdates() {
-    $.ajax({
-        url: "{{route('pizarra.actualizar',['diagram' => $diagram->id])}}",
-        type: 'GET',
-        dataType: 'json',
-        success: function(response) {
-            const jsonContent = {!! json_encode($contenidoJson) !!};
-            // Manejar los cambios recibidos en 'response'
-            console.log(response);
-            // Ejemplo: Actualizar la tabla HTML con los datos recibidos
-            myDiagram.model = go.Model.fromJson(jsonContent);
-            $('#table-container').html(response.table_html);
-            
-        },
-        error: function(xhr, status, error) {
-            console.error(error);
-        }
-    });
-}
+@vite(['resources/js/socket-client.js'])
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.0/socket.io.js"></script>
 
-$(document).ready(function() {
-    // Ejecutar la función checkUpdates() cada 5 segundos
-    //setInterval(checkUpdates, 5000);
+<script>
+const socket = io('http://127.0.0.1:3000',{ transports : ['websocket'] }); 
+
+
+    socket.on("nuevaflecha",function(newlink){
+        const model = myDiagram.model;
+        model.setDataProperty(newlink, "text", "msg");
+    })
+
+    socket.on("nuevoLink",function(link){
+        const model = myDiagram.model;
+        model.addLinkData(link);
+        //ensureLifelineHeights();
+    })
+
+    socket.on("link:final",function(newact){
+        const model = myDiagram.model;
+        model.addNodeData(newact);
+        ensureLifelineHeights();
+    })
+
+    socket.on("nuevaLinea",function(nuevaLinea){        
+        const model = myDiagram.model;
+        model.addNodeData(nuevaLinea);
+    })
+
+    socket.on("eliminarObjeto",function(selectedNode){
+        console.log("Entrando a eliminar el objeto");
+
+        var diagram = myDiagram;
+        var model = diagram.model;
+
+        diagram.startTransaction('eliminar objeto seleccionado');
+        // Encuentra el nodo en el modelo del diagrama
+        var nodeToRemove = model.findNodeDataForKey(selectedNode.key);
+       /*  console.log("node: ",selectedNode);
+        console.log("link: ",nodeToRemove); */
+        if (nodeToRemove !== null) {
+            // Elimina el nodo del modelo
+            model.removeNodeData(nodeToRemove);
+        } else {
+            console.log('Nodo no encontrado en el diagrama');
+        }
+        diagram.commitTransaction('eliminar objeto seleccionado');
+    }) 
+
+    function eliminar() {
+    var diagram = myDiagram;
+    var selectedNode = diagram.selection.first(); // Obtiene el primer objeto seleccionado
+
+        if (selectedNode) {
+            diagram.startTransaction('eliminar objeto seleccionado'); // Inicia una transacción para agrupar las operaciones de eliminación
+            console.log("function: ",selectedNode)
+            // Elimina el objeto seleccionado del diagrama
+            socket.emit("eliminar",selectedNode.data);
+            diagram.remove(selectedNode);
+            
+            diagram.commitTransaction('eliminar objeto seleccionado'); // Confirma la transacción para aplicar los cambios al diagrama
+            
+            
+        } else {
+            console.log('Ningún objeto seleccionado'); // Muestra un mensaje si no hay objetos seleccionados
+        }
+    }   
     
-});
-   
 </script>
 <script>
     // FUNCION PARA GENERAR CODIGO DE JAVA
@@ -678,26 +736,6 @@ $(document).ready(function() {
         document.body.removeChild(element);
     }
 
-    /*const codejava = generateJavaCodeFromDiagram(contenidoJson);
-    const codepython = generatePythonCodeFromDiagram(contenidoJson);
-    const codejavascript = generateJavaScriptCodeFromDiagram(contenidoJson);*/
-    // console.log(codejava);
-    // console.log(codepython);
-    // console.log(codejavascript);
-
-    /*function displayGeneratedCode() {
-
-        var contenidoJson = myDiagram.model.toJson();
-
-        const codejava = generateJavaCodeFromDiagram(contenidoJson);
-        const codepython = generatePythonCodeFromDiagram(contenidoJson);
-        const codejavascript = generateJavaScriptCodeFromDiagram(contenidoJson);
-
-        document.getElementById("generatedJavaCode").textContent = codejava;
-        document.getElementById("generatedPythonCode").textContent = codepython;
-        document.getElementById("generatedJavaScriptCode").textContent = codejavascript;
-    }*/
-    //document.getElementById("generateCodeButton").addEventListener("click", displayGeneratedCode);
     //Desacarga codigo Python
     function displayGeneratedCodePython(){
         var contenidoJson = myDiagram.model.toJson();
@@ -727,7 +765,28 @@ $(document).ready(function() {
 </script>
 
 <script>
-    function saveDiagramAutomatically() {
+    function moverPartes(data) {
+        console.log('dentro de la funcion')
+    // Itera sobre los datos recibidos, que podrían contener información sobre varias partes
+        data.forEach(partData => {
+            console.log('dentro del for')
+            // Obtén la parte correspondiente en el diagrama usando su clave o algún otro identificador único
+            const part = myDiagram.findPartForKey(partData.key);
+            if (part) {
+                // Actualiza la posición de la parte con los datos recibidos
+                part.location = new go.Point(partData.x, partData.y); // Suponiendo que los datos contienen las coordenadas x e y
+            }
+        });
+    }
+
+    socket.on('movimientoPartes', data => {
+        console.log('dentro del socket')
+    // Llama a la función para mover las partes con los datos recibidos
+        moverPartes(data);
+    });
+
+    
+    function saveDiagramAutomatically() {        
         // Obtén el contenido JSON del diagrama
         var contenidoJson = myDiagram.model.toJson();
         // Realiza la solicitud AJAX para guardar el diagrama
@@ -742,19 +801,17 @@ $(document).ready(function() {
             success: function(response) {
                 // Maneja la respuesta del servidor, si es necesario
                 console.log('Diagrama guardado con éxito.');
-
+                
             },
             error: function(error) {
                 // Maneja errores, si es necesario
                 console.error('Error al guardar el diagrama:', error);
             }
         });
+        
     }
-
-
-
     // Llama a la función de guardado automáticamente cada segundo
-    //setInterval(saveDiagramAutomatically, 3000);
+    //setInterval(saveDiagramAutomatically, 5000);
 
     // Agrega el manejador al botón "Guardar Diagrama"
     $(document).ready(function() {
